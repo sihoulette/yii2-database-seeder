@@ -16,6 +16,6 @@ final class DatabaseSeeder extends AbstractSeeder
      */
     public function run(): void
     {
-
+        $this->push(UserTableSeeder::class);
     }
 }
