@@ -50,6 +50,9 @@ $config = [
 
             ],
         ],
+        'seeder' => [
+            'class' => \app\components\seeder\SeederComponent::class
+        ],
         'repository' => [
             'class' => \app\components\repository\ActiveRepository::class
         ],
