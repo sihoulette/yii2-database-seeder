@@ -50,6 +50,9 @@ $config = [
 
             ],
         ],
+        'repository' => [
+            'class' => \app\components\repository\ActiveRepository::class
+        ],
     ],
     'modules' => [
         'cabinet' => [
