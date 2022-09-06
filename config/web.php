@@ -47,7 +47,14 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+
             ],
+        ],
+    ],
+    'modules' => [
+        'cabinet' => [
+            'class' => \app\modules\cabinet\CabinetModule::class,
+            'defaultRoute' => 'dashboard',
         ],
     ],
     'params' => $params,
