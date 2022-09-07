@@ -43,6 +43,7 @@ class ActiveRepositoryQuery implements ActiveRepositoryQueryInterface
         $class = static::class;
         if (!isset(self::$instances[$class])) {
             self::$instances[$class] = new static();
+            self::$instances[$class]->reset();
         }
 
         return self::$instances[$class];
@@ -68,7 +69,7 @@ class ActiveRepositoryQuery implements ActiveRepositoryQueryInterface
     final public function builder(): ActiveQuery
     {
         if ($this->query->modelClass !== static::$entityClass) {
-            $this->query = $this->reset();
+            $this->query->modelClass = static::$entityClass;
         }
 
         return $this->query instanceof ActiveQuery
