@@ -2,7 +2,8 @@
 
 namespace app\components\repository;
 
-use yii\db\ActiveQuery;
+use app\components\repository\query\ActiveRepositoryQueryInterface;
+use app\components\repository\storage\ActiveRepositoryStorageInterface;
 
 /**
  * Interface ActiveRepositoryInterface
@@ -12,12 +13,16 @@ use yii\db\ActiveQuery;
 interface ActiveRepositoryInterface
 {
     /**
-     * @return ActiveQuery
+     * Create active repository query instance
+     *
+     * @return ActiveRepositoryQueryInterface
      */
-    public function newQuery(): ActiveQuery;
+    public function getQuery(): ActiveRepositoryQueryInterface;
 
     /**
-     * @return ActiveQuery
+     * Create active repository storage instance
+     *
+     * @return ActiveRepositoryStorageInterface
      */
-    public function getQuery(): ActiveQuery;
+    public function getStorage(): ActiveRepositoryStorageInterface;
 }

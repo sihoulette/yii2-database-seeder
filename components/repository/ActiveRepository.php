@@ -2,9 +2,11 @@
 
 namespace app\components\repository;
 
-use yii\db\ActiveRecord;
-use yii\db\ActiveQuery;
 use yii\base\Component;
+use app\components\repository\query\ActiveRepositoryQuery;
+use app\components\repository\storage\ActiveRepositoryStorage;
+use app\components\repository\query\ActiveRepositoryQueryInterface;
+use app\components\repository\storage\ActiveRepositoryStorageInterface;
 
 /**
  * Class ActiveRepository
@@ -14,44 +16,32 @@ use yii\base\Component;
 class ActiveRepository extends Component implements ActiveRepositoryInterface
 {
     /**
-     * @var string $modelClass
+     * @var ActiveRepositoryQueryInterface|null $query
      */
-    protected string $modelClass = ActiveRecord::class;
+    protected ?ActiveRepositoryQueryInterface $query = null;
 
     /**
-     * @var ActiveQuery $query
+     * @var ActiveRepositoryStorageInterface|null $storage
      */
-    private ActiveQuery $query;
+    protected ?ActiveRepositoryStorageInterface $storage = null;
 
     /**
-     * @var ActiveRecord $entity
+     * @return ActiveRepositoryQueryInterface
      */
-    protected ActiveRecord $entity;
-
-    /**
-     * @param array $config
-     */
-    public function __construct(array $config = [])
+    public function getQuery(): ActiveRepositoryQueryInterface
     {
-        parent::__construct($config);
-        $this->newQuery();
-    }
+        $this->query = ActiveRepositoryQuery::instance();
 
-    /**
-     * @return ActiveQuery
-     */
-    final public function newQuery(): ActiveQuery
-    {
-        $this->query = new ActiveQuery($this->modelClass);
-
-        return $this->getQuery();
-    }
-
-    /**
-     * @return ActiveQuery
-     */
-    final public function getQuery(): ActiveQuery
-    {
         return $this->query;
+    }
+
+    /**
+     * @return ActiveRepositoryStorageInterface
+     */
+    public function getStorage(): ActiveRepositoryStorageInterface
+    {
+        $this->storage = ActiveRepositoryStorage::instance();
+
+        return $this->storage;
     }
 }
