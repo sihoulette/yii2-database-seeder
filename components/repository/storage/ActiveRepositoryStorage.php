@@ -2,11 +2,11 @@
 
 namespace app\components\repository\storage;
 
-use Yii;
-use Throwable;
 use Exception;
 use yii\db\ActiveRecord;
-use yii\helpers\ArrayHelper;
+use app\components\repository\storage\process\ActiveRepositoryStorageProcessCreate;
+use app\components\repository\storage\process\ActiveRepositoryStorageProcessUpdate;
+use app\components\repository\storage\process\ActiveRepositoryStorageProcessDelete;
 
 /**
  * Class ActiveRepositoryStorage
@@ -16,19 +16,14 @@ use yii\helpers\ArrayHelper;
 class ActiveRepositoryStorage implements ActiveRepositoryStorageInterface
 {
     /**
-     * @var array $logs
-     */
-    private array $logs = [];
-
-    /**
-     * @var ActiveRecord|null $entityModel
-     */
-    protected ?ActiveRecord $entityModel = null;
-
-    /**
      * @var array $instances
      */
     private static array $instances = [];
+
+    /**
+     * @var ActiveRepositoryStorageProcessInterface|null $process
+     */
+    private ?ActiveRepositoryStorageProcessInterface $process = null;
 
     /**
      * Close constructor for singleton
@@ -53,121 +48,37 @@ class ActiveRepositoryStorage implements ActiveRepositoryStorageInterface
     /**
      * @param ActiveRecord $model
      *
-     * @return $this
+     * @return ActiveRepositoryStorageProcessInterface
      */
-    final protected function setEntityModel(ActiveRecord $model): static
+    public function create(ActiveRecord $model): ActiveRepositoryStorageProcessInterface
     {
-        $this->entityModel = $model;
+        $this->process = new ActiveRepositoryStorageProcessCreate($model);
 
-        return $this;
+        return $this->process->execute();
     }
 
     /**
      * @param ActiveRecord $model
      *
-     * @return ActiveRecord|null
+     * @return ActiveRepositoryStorageProcessInterface
      */
-    public function create(ActiveRecord $model): ?ActiveRecord
+    public function update(ActiveRecord $model): ActiveRepositoryStorageProcessInterface
     {
-        $log['success'] = false;
-        $this->setEntityModel($model);
-        if ($this->entityModel instanceof ActiveRecord && $this->entityModel->isNewRecord) {
-            $transaction = Yii::$app->db->beginTransaction();
-            try {
-                $this->entityModel->save();
-                $transaction->commit();
-                $log['success'] = true;
-            } catch (Exception $e) {
-                $log['exception'] = "[{$e->getCode()}] " . $e->getMessage();
-                $transaction->rollBack();
-            }
-        }
-        $this->setLog(__FUNCTION__, $log);
+        $this->process = new ActiveRepositoryStorageProcessUpdate($model);
 
-        return $log['success'] ? $this->entityModel : null;
+        return $this->process->execute();
     }
 
     /**
      * @param ActiveRecord $model
      *
-     * @return ActiveRecord|null
+     * @return ActiveRepositoryStorageProcessInterface
      */
-    public function update(ActiveRecord $model): ?ActiveRecord
+    public function delete(ActiveRecord $model): ActiveRepositoryStorageProcessInterface
     {
-        $log['success'] = false;
-        $this->setEntityModel($model);
-        if ($this->entityModel instanceof ActiveRecord) {
-            $transaction = Yii::$app->db->beginTransaction();
-            try {
-                $this->entityModel->save();
-                $transaction->commit();
-                $log['success'] = true;
-            } catch (Exception $e) {
-                $log['success'] = false;
-                $log['exception'] = "[{$e->getCode()}] " . $e->getMessage();
-                $transaction->rollBack();
-            }
-        }
-        $this->setLog(__FUNCTION__, $log);
+        $this->process = new ActiveRepositoryStorageProcessDelete($model);
 
-        return $log['success'] ? $this->entityModel : null;
-    }
-
-    /**
-     * @param ActiveRecord $model
-     *
-     * @return ActiveRecord|null
-     */
-    public function delete(ActiveRecord $model): ?ActiveRecord
-    {
-        $log['success'] = false;
-        $this->setEntityModel($model);
-        if ($this->entityModel instanceof ActiveRecord) {
-            $transaction = Yii::$app->db->beginTransaction();
-            try {
-                $this->entityModel->delete();
-                $transaction->commit();
-                $log['success'] = true;
-            } catch (Throwable $e) {
-                $log['success'] = false;
-                $log['exception'] = "[{$e->getCode()}] " . $e->getMessage();
-                $transaction->rollBack();
-            }
-        }
-        $this->setLog(__FUNCTION__, $log);
-
-        return $log['success'] ? $this->entityModel : null;
-    }
-
-    /**
-     * @param string $type
-     * @param array  $data
-     *
-     * @return void
-     */
-    final public function setLog(string $type, array $data = []): void
-    {
-        if (in_array($type, ActiveRepositoryStorageInterface::STORAGE_PROCESS, true)) {
-            $this->logs[$type] = ArrayHelper::merge($this->logs[$type] ?? [], $data);
-        }
-    }
-
-    /**
-     * @param string $type
-     *
-     * @return array
-     */
-    final public function getLog(string $type): array
-    {
-        return $this->logs[$type] ?? [];
-    }
-
-    /**
-     * @return array
-     */
-    final public function getLogs(): array
-    {
-        return $this->logs;
+        return $this->process->execute();
     }
 
     /**
